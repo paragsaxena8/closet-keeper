@@ -1,0 +1,12 @@
+{
+  "name": "closet-keeper",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
