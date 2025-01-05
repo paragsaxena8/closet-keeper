@@ -1,5 +1,17 @@
 import { model, Schema } from "mongoose";
 
+export interface IOutfit extends Document {
+  name: string;
+  items: Array<string>;
+  occasion: string;
+  weather: string;
+  tags: Array<string>;
+  image: string;
+  lastWorn: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const outfitModel = new Schema(
   {
     name: { type: String, required: true },
@@ -15,4 +27,4 @@ const outfitModel = new Schema(
   { timestamps: true }
 );
 
-export const Outfit = model("Outfit", outfitModel);
+export const Outfit = model<IOutfit>("Outfit", outfitModel);

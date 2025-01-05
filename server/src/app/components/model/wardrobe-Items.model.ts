@@ -1,5 +1,20 @@
 import { model, Schema } from "mongoose";
 
+export interface IWardrobeItem {
+  name: string;
+  type: string;
+  category: string;
+  color: string;
+  size: string;
+  brand: string;
+  material: string;
+  tags: Array<string>;
+  image: string;
+  lastWorn: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 const wardrobeItemSchema = new Schema(
   {
     name: { type: String, required: true },
@@ -18,4 +33,4 @@ const wardrobeItemSchema = new Schema(
   { timestamps: true }
 );
 
-export const WardrobeItem = model("WardrobeItem", wardrobeItemSchema);
+export const WardrobeItem = model<IWardrobeItem>("WardrobeItem", wardrobeItemSchema);
