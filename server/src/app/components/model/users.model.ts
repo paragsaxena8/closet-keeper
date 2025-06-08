@@ -6,6 +6,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  confirmPassword?: string;
   preferences: object;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +20,7 @@ const userSchema = new Schema(
     name: { type: String, required: false },
     email: { type: String, required: false },
     password: { type: String, required: true },
+    confirmPassword: { type: String, required: false },
     preferences: { type: Object, required: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
@@ -38,6 +40,7 @@ userSchema.pre("validate", async function (next) {
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ) {
+  // Compare the provided password with the hashed password
   return await bcrypt.compare(candidatePassword, this.passwordHash);
 };
 export const User = model<IUser>("Users", userSchema);

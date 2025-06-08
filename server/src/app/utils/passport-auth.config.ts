@@ -36,7 +36,7 @@ passport.deserializeUser(async (id: string, done) => {
       if (!user) {
         return done(null, false);
       }
-      return done(null, user);
+      return done(null, {id});
     } catch (error) {
       return done(error);
     }
@@ -47,8 +47,8 @@ passport.deserializeUser(async (id: string, done) => {
 passport.use(
   new GoogleStrategy(
     {
-      clientID: "YOUR_GOOGLE_CLIENT_ID",
-      clientSecret: "YOUR_GOOGLE_CLIENT_SECRET",
+      clientID: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       callbackURL: "http://localhost:3000/auth/google/callback", // Adjust URL
     },
     async (accessToken, refreshToken, profile, done) => {

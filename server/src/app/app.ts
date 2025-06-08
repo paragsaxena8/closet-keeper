@@ -4,9 +4,11 @@ import "dotenv/config";
 import { WardrobeRoute } from "./components/routes/wardrobe.route";
 import passport from "./utils/passport-auth.config";
 import session from "express-session";
+import cors from "cors";
 import { AuthRoute } from "./components/routes/auth.route";
 import { OutfitRoutes } from "./components/routes/outfit.route";
 import { CategoryRoutes } from "./components/routes/category.route";
+import cookieParser from "cookie-parser";
 const app = express();
 
 const mongoUri = process.env.DB_SERVER_HOST;
@@ -24,13 +26,26 @@ try {
 }
 
 // Express middleware setup
+app.use(cors({
+  origin: "http://localhost:8080",
+  credentials: true
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 app.use(
   session({
-    secret: "sdnfiwhurgehrgoeqiurhgir", // Keep this secret!
+    name: process.env.session_name as string, // Name of the session cookie
+    secret: process.env.session_secret as string, // Keep this secret!
     resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 60 * 60 * 1000 }, // 1 hour
+    saveUninitialized: false,
+    cookie: {
+      sameSite: "lax",
+      maxAge: 3600000, // 1 hour in milliseconds
+      secure: false,
+      httpOnly: true,
+      path: "/"
+    }, // 1 hour
     genid: () => {
       return Math.random().toString();
     },
@@ -44,9 +59,8 @@ app.use(passport.session());
 app.get("/", (req: Request, res: Response) => {
   res.send(
     "Hello World" +
-      ` ${
-        req.isAuthenticated() ? "Authenticated User" : "Unauthenticated User"
-      }`
+    ` ${req.isAuthenticated() ? "Authenticated User" : "Unauthenticated User"
+    }`
   );
 });
 app.use("/auth", AuthRoute);
