@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import passport from "../../utils/passport-auth.config";
 import { User } from "../model/users.model";
 import { catchAsync } from "../../utils/catchAsync";
+import { OAuth2Client } from "google-auth-library";
 
 export const loginMiddleware = (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate("local", {
@@ -111,6 +112,59 @@ export const googleAuthCallback = (req: Request, res: Response) => {
     failureRedirect: "/login",
   })(req, res);
 };
+
+export const googleAuthToken = catchAsync(async (req: Request, res: Response) => {
+    const { id_token } = req.body;
+    const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    if (!id_token) {
+        return res.status(400).json({ message: 'ID token not provided' });
+    }
+
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: id_token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        if (!payload) {
+            return res.status(401).json({ message: 'Invalid ID token' });
+        }
+
+        // The payload contains user's Google profile information
+        const { sub: googleId, name: displayName, email, picture: photo } = payload;
+
+        // Find or create a user in your database
+        let user = await User.findOne({ googleId });
+        if (!user) {
+            user = new User({
+                googleId,
+                username: displayName || email || `google_${googleId}`,
+                email,
+                name: displayName,
+                // password not set
+            });
+            await user.save();
+        }
+
+        // Manually log in the user for session management
+        req.login(user, (err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Session login failed', error: err });
+            }
+            const userData = {
+                username: user.username,
+                email: user.email,
+                name: user.name,
+                id: user._id,
+            };
+            res.status(200).json({ message: 'Login successful', data: userData });
+        });
+
+    } catch (error: any) {
+        res.status(401).json({ message: 'Invalid ID token', error: error.message });
+    }
+});
 
 export const logout = (req: Request, res: Response): any => {
   // check if the user is authenticated

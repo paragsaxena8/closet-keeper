@@ -5,15 +5,19 @@ import {
   registerUser,
   googleAuth,
   googleAuthCallback,
-  logout
+  googleAuthToken,
+  logout,
+  protectedR
 } from "../controllers/auth.controller";
 
 const AuthRoute = Router();
 
 AuthRoute.post("/login", loginMiddleware, login);
-AuthRoute.post("/signup", registerUser);
+AuthRoute.post("/register", registerUser);
+AuthRoute.post("/google/token", googleAuthToken);
+AuthRoute.get("/protected", protectedR, (req, res) => res.json({ message: "You are authenticated", user: req.user }));
 AuthRoute.get("/logout", logout);
-AuthRoute.get("/auth/google", googleAuth);
-AuthRoute.get("/auth/google/callback", googleAuthCallback);
+AuthRoute.get("/google", googleAuth);
+AuthRoute.get("/google/callback", googleAuthCallback);
 
 export { AuthRoute };

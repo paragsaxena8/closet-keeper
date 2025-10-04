@@ -36,7 +36,7 @@ passport.deserializeUser(async (id: string, done) => {
       if (!user) {
         return done(null, false);
       }
-      return done(null, {id});
+      return done(null, user);
     } catch (error) {
       return done(error);
     }
@@ -58,7 +58,10 @@ passport.use(
         if (!user) {
           user = new User({
             googleId: profile.id,
-            username: profile.displayName, // Or use email
+            username: profile.displayName || profile.emails?.[0]?.value || `google_${profile.id}`,
+            email: profile.emails?.[0]?.value,
+            name: profile.displayName,
+            // password not set for Google users
           });
           await user.save();
         }
